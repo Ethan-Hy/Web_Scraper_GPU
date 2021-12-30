@@ -71,9 +71,7 @@ for i in range(2):
     # number of pages not shown so need to calculate it from number of products shown and available to view.
     page_text = doc.find(class_="showing-count")
     pages_text = str(page_text).split("of")
-    if not page_text:
-        continue
-    else:
+    if page_text:
         if len(pages_text) > 1:
             items_page = int(pages_text[0].replace(" ", "").split("-")[2])
             total_items = int(pages_text[1].replace(" ", "").split("r")[0])
