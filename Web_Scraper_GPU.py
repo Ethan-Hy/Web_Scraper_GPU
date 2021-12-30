@@ -21,8 +21,8 @@ items_found = {}
 
 
 # newegg.com
-# url = f"https://www.newegg.com/global/uk-en/p/pl?d={product}" - generic search
-# search specifically for graphics cards
+# url = f"https://www.newegg.com/global/uk-en/p/pl?d={product}" - generic search.
+# Search specifically for graphics cards
 url = f"https://www.newegg.com/global/uk-en/p/pl?d={product}&N=101582767&isdeptsrh=1"
 page = requests.get(url).text
 doc = BeautifulSoup(page, "html.parser")
@@ -62,3 +62,14 @@ for page in range(1, pages + 1):
         except:
             pass
 
+
+# ebuyer.com
+# url = f"https://www.ebuyer.com/search?q={product}" - generic search
+# search specifically for graphics cards
+if brand == "Nvidia":
+    url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-Nvidia?q={product}"
+else:
+    url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-AMD?q={product}"
+
+page = requests.get(url).text
+doc = BeautifulSoup(page, "html.parser")
