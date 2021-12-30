@@ -73,3 +73,15 @@ else:
 
 page = requests.get(url).text
 doc = BeautifulSoup(page, "html.parser")
+
+# find number of pages to search through them all
+page_text = doc.find(class_="showing-count")
+pages_text = str(page_text).split("of")
+# number of pages not shown so need to calculate it from number of products shown and available to view
+if len(pages_text) > 1:
+    items_page = int(pages_text[0].replace(" ", "").split("-")[2])
+    total_items = int(pages_text[1].replace(" ", "").split("r")[0])
+    pages = (total_items + (items_page - 1))//items_page
+else:
+    pages = int(pages_text[0].split(" ")[2])
+
