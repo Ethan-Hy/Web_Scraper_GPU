@@ -54,35 +54,66 @@ for page in range(1, pages + 1):
         if next_parent.find(class_="item-promo"):
             continue
         link = parent['href']
-        # TODO: try using without try
-        try:
-            price_pound = next_parent.find(class_="price-current").strong.string
-            price_pence = next_parent.find(class_="price-current").sup.string
-            price = price_pound + price_pence
-            items_found[item] = {"price": float(price.replace(",", "")), "link": link}
-        except:
-            pass
+        price_pound = next_parent.find(class_="price-current").strong.string
+        price_pence = next_parent.find(class_="price-current").sup.string
+        price = price_pound + price_pence
+        items_found[item] = {"price": float(price.replace(",", "")), "link": link}
 
 
 # ebuyer.com
 # url = f"https://www.ebuyer.com/search?q={product}" - generic search
 # search specifically for graphics cards
-if brand == "Nvidia":
+if brand.lower() == "nvidia":
     url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-Nvidia?q={product}"
 else:
     url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-AMD?q={product}"
-
 page = requests.get(url).text
 doc = BeautifulSoup(page, "html.parser")
 
-# find number of pages to search through them all
+# find number of pages to search through them all.
+# number of pages not shown so need to calculate it from number of products shown and available to view.
 page_text = doc.find(class_="showing-count")
 pages_text = str(page_text).split("of")
-# number of pages not shown so need to calculate it from number of products shown and available to view
 if len(pages_text) > 1:
     items_page = int(pages_text[0].replace(" ", "").split("-")[2])
     total_items = int(pages_text[1].replace(" ", "").split("r")[0])
     pages = (total_items + (items_page - 1))//items_page
 else:
     pages = int(pages_text[0].split(" ")[2])
+for page in range(1, pages + 1):
+    if brand.lower() == "nvidia":
+        url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-Nvidia?page={page}&q={product}"
+    else:
+        url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-AMD?page={page}&q={product}"
 
+    page = requests.get(url).text
+    doc = BeautifulSoup(page, "html.parser")
+
+    # only items within grid
+    div = doc.find(class_="grid-view js-taxonomy-view is-active")
+    # find any text with searched product terms
+    items = div.find_all(text=re.compile(product))
+    for item in items:
+        parent = item.parent
+        if parent.name != "a":
+            continue
+        next_parent = item.find_parent(class_="grid-item js-listing-product")
+        # checks if the item is out of stock
+        if next_parent.find(class_="grid-item__coming-soon"):
+            continue
+        link = parent['href']
+        link = "https://www.ebuyer.com" + link
+        price = next_parent.find(class_="grid-item__price").find(text=re.compile(" "))
+        item = str(item).strip()
+        price = price.strip()
+        items_found[item] = {"price": float(price.replace(",", "")), "link": link}
+
+
+sorted_items = sorted(items_found.items(), key=lambda x: x[1]['price'])
+
+for item in sorted_items:
+    print(item[0])
+    print(f"£{item[1]['price']}")
+    print(item[1]['link'])
+    print("------------------------------------------------------------------------------------------------------------"
+          "-----------------------------------------------------------")
