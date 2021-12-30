@@ -63,7 +63,6 @@ found = False
 url = list()
 url.append(f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-Nvidia?q={product}")
 url.append(f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-AMD?q={product}")
-print(url)
 
 for i in range(2):
     page = requests.get(url[i]).text
@@ -84,11 +83,11 @@ for i in range(2):
             pages = int(pages_text[0].split(" ")[2])
         for page in range(1, pages + 1):
             if i == 0:
-                url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-Nvidia?page={page}&q={product}"
+                url2 = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-Nvidia?page={page}&q={product}"
             else:
-                url = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-AMD?page={page}&q={product}"
+                url2 = f"https://www.ebuyer.com/store/Components/cat/Graphics-Cards-AMD?page={page}&q={product}"
 
-            page = requests.get(url).text
+            page = requests.get(url2).text
             doc = BeautifulSoup(page, "html.parser")
 
             # only items within grid
@@ -138,42 +137,51 @@ for x in range(0, 4):
         browser.close()
         opened = True
 
-    if not opened:
-        continue
-    # find number of pages to search through them all
-    page_text = doc.find(class_="display_sites").contents
-    pages = int(page_text[7].string)
-    for page in range(1, pages + 1):
-        url = f"https://www.overclockers.co.uk/search/index/sSearch/" \
-              f"{product}/sFilter_category/PC+Components/sSort/6/sPerPage/12/sPage/{page}"
-        with sync_playwright() as p:
-            browser = p.webkit.launch()
-            page = browser.new_page()
-            page.goto(url)
-            page.wait_for_timeout(10000)
-            doc = BeautifulSoup(page.content(), "html.parser")
-            browser.close()
-        # only items
-        div = doc.find(class_="listing")
-        # find any text with searched product terms
-        # items = div.find_all(text=re.compile(product))
-        items = div.find_all(class_="producttitles", title=re.compile(product))
-        for item in items:
-            link = item['href']
-            parent = item.find_parent(class_="inner")
-            price = parent.find(class_="price")
+    if opened:
+        opened2 = False
+        # find number of pages to search through them all
+        page_text = doc.find(class_="display_sites").contents
+        pages = int(page_text[7].string)
+        for page in range(1, pages + 1):
+            for y in range(0, 4):
+                error2 = True
+                url = f"https://www.overclockers.co.uk/search/index/sSearch/" \
+                      f"{product}/sFilter_category/PC+Components/sSort/6/sPerPage/12/sPage/{page}"
+                with sync_playwright() as p:
+                    browser = p.webkit.launch()
+                    page = browser.new_page()
+                    page.goto(url)
+                    page.wait_for_timeout(10000)
+                    doc = BeautifulSoup(page.content(), "html.parser")
+                    browser.close()
+                    opened2 = True
+                if opened2:
+                    # only items
+                    div = doc.find(class_="listing")
+                    # find any text with searched product terms
+                    # items = div.find_all(text=re.compile(product))
+                    items = div.find_all(class_="producttitles", title=re.compile(product))
+                    for item in items:
+                        link = item['href']
+                        parent = item.find_parent(class_="inner")
+                        price = parent.find(class_="price")
 
-            # check if out of stock
-            if price is None:
-                continue
-            price = float(price.find(text=re.compile("£")).replace("£", "").replace(",", "").strip())
-            items_found[item['title']] = {"price": price, "link": link}
-            found = True
-    error = False
-    if error:
-        sleep(2)  # wait 2 seconds if failed
-    else:
-        break
+                        # check if out of stock
+                        if price is None:
+                            continue
+                        price = float(price.find(text=re.compile("£")).replace("£", "").replace(",", "").strip())
+                        items_found[item['title']] = {"price": price, "link": link}
+                        found = True
+                    error2 = False
+                    if error2:
+                        sleep(2)  # wait 2 seconds if failed
+                    else:
+                        break
+        error = False
+        if error:
+            sleep(2)  # wait 2 seconds if failed
+        else:
+            break
 
 if not found:
     print("No items found on www.newegg.com")
