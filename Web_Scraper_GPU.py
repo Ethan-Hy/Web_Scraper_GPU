@@ -109,6 +109,62 @@ for page in range(1, pages + 1):
         items_found[item] = {"price": float(price.replace(",", "")), "link": link}
 
 
+# overclockers.co.uk
+# can fail to reach server due to cloudflare so try up to 4 times
+for x in range(0, 4):
+    error = True
+
+    # url = f"https://www.overclockers.co.uk/search?sSearch={product}" - generic search
+    # search specifically for pc components
+    url = f"https://www.overclockers.co.uk/search/index/sSearch/" \
+          f"{product}/sFilter_category/PC+Components/sSort/3/sPerPage/12"
+
+    # get past cloudflare
+    # https://stackoverflow.com/questions/65604551/cant-bypass-cloudflare-with-python-cloudscraper
+    with sync_playwright() as p:
+        browser = p.webkit.launch()
+        page = browser.new_page()
+        page.goto(url)
+        page.wait_for_timeout(10000)
+        doc = BeautifulSoup(page.content(), "html.parser")
+        browser.close()
+
+    # find number of pages to search through them all
+    page_text = doc.find(class_="display_sites").contents
+    pages = int(page_text[7].string)
+    for page in range(1, pages + 1):
+        url = f"https://www.overclockers.co.uk/search/index/sSearch/" \
+              f"{product}/sFilter_category/PC+Components/sSort/6/sPerPage/12/sPage/{page}"
+        with sync_playwright() as p:
+            browser = p.webkit.launch()
+            page = browser.new_page()
+            page.goto(url)
+            page.wait_for_timeout(10000)
+            doc = BeautifulSoup(page.content(), "html.parser")
+            browser.close()
+        # only items
+        div = doc.find(class_="listing")
+        # find any text with searched product terms
+        # items = div.find_all(text=re.compile(product))
+        items = div.find_all(class_="producttitles", title=re.compile(product))
+        for item in items:
+            link = item['href']
+            parent = item.find_parent(class_="inner")
+            price = parent.find(class_="price")
+
+            # check if out of stock
+            if price is None:
+                continue
+            price = float(price.find(text=re.compile("£")).replace("£", "").replace(",", "").strip())
+            items_found[item['title']] = {"price": price, "link": link}
+    error = False
+    if error:
+        sleep(2)  # wait 2 seconds if failed
+    else:
+        break
+
+
+
 sorted_items = sorted(items_found.items(), key=lambda x: x[1]['price'])
 
 for item in sorted_items:
