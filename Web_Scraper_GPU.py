@@ -54,6 +54,7 @@ for page in range(1, pages + 1):
         if next_parent.find(class_="item-promo"):
             continue
         link = parent['href']
+        # TODO: try using without try
         try:
             price_pound = next_parent.find(class_="price-current").strong.string
             price_pence = next_parent.find(class_="price-current").sup.string
