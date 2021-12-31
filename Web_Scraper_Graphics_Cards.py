@@ -1,5 +1,5 @@
 # This is a web scraping script which will
-# compare graphical processing unit card prices from various different websites.
+# compare graphics card prices from various different websites.
 from bs4 import BeautifulSoup
 import requests
 import re
