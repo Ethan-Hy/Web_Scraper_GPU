@@ -1,6 +1,6 @@
-# Webscraper script - GPU prices
+# Webscraper script - Graphics Cards prices
 ### Description
-This script uses BeautifulSoup to webscrape a few websites in order to compare graphics processing unit cards.
+This script uses BeautifulSoup to webscrape a few websites in order to compare graphics cards.
 
 The current websites checked are: www.newegg.com, www.ebuyer.com, www.overclockers.co.uk.
 
