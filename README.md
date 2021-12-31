@@ -1,4 +1,4 @@
-# Webscraper script - Graphics Cards prices
+# Web Scraper script - Graphics Cards prices
 ### Description
 This script uses BeautifulSoup to webscrape a few websites in order to compare graphics cards.
 
