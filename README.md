@@ -11,4 +11,4 @@ Python, Packages: bs4, requests, re, playwright.sync_api, time.
 
 ### Instructions
 
-This script runs in terminal, simply run `Web_Scraper_GPU.py` in the same directory.
+This script runs in terminal, simply run `Web_Scraper_Graphics_Cards.py` in the same directory.
